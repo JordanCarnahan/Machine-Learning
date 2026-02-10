@@ -9,14 +9,8 @@ df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
 arr = np.arange(10).reshape(2, 5)
 text = "hello"
 value = 42
-
 # %%
 torch.sin(torch.tensor(math.pi)) 
-
-import torch
-import torch.nn as nn
-import math
-import numpy as np
 
 def calculate_softmax(attention_scores):
     scores = attention_scores - np.max(attention_scores, axis=-1, keepdims=True)
@@ -49,3 +43,24 @@ K = array_k.reshape(8, 4)
 V = array_v.reshape(8, 4)
 calculate_attention_scores(K, V, d_k)
 
+# %%
+import numpy as np
+import torch
+import torch.nn as nn
+import math
+
+def relu(x):
+    return np.maximum(0, x)
+
+data = torch.arange(start=0.08, end=0.88, step=0.08)
+#take the exponent of element 4 in data array
+element_e = np.exp(data[5].item())
+print(element_e)
+#relu_element = relu(element_e)
+relu_element = relu((3*math.pi) / 2)
+print(relu_element)
+
+m_dropout = nn.Dropout(p=probability, inplace=False)
+p = a float probability of an element to be zeroed. default: 0.5
+#inplace: a boolean, if set to True, will do this operation in-place. Default: false
+# %%

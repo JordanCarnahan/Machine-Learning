@@ -43,7 +43,7 @@ import math
 #This module provides access to the mathematical functions defined by the C standard.
 
 #module 1: InputEmbeddings
-class InputEmbeddings(nn.module):
+class InputEmbeddings(nn.Module):
     #constructor, def dim of model: d_model, vocab_size(# of words in the vocab )
     def __init__(self, d_model: int, vocab_size: int):
         #The __init__ method in Python is a special initializer method for classes. 
@@ -58,7 +58,7 @@ class InputEmbeddings(nn.module):
         self.vocab_size = vocab_size
         #basically a dictionary layer that maps numbers to same vector ele each time, this vector gets learned by the model
                 #https://docs.pytorch.org/docs/stable/generated/torch.nn.modules.sparse.Embedding.html
-        self.embedding = nn.embedding(vocab_size, d_model)
+        self.embedding = nn.Embedding(vocab_size, d_model)
         #nn.embedding: module in PyTorch is a lookup table that stores a fixed-size dictionary of embeddings. 
         #It is widely used in Natural Language Processing (NLP) to convert integer indices (representing words or tokens) into dense, continuous vectors. 
         #Purpose: It maps discrete, high-dimensional integer inputs (like vocabulary indices) to continuous, lower-dimensional dense vector representations.
