@@ -60,7 +60,7 @@ print(element_e)
 relu_element = relu((3*math.pi) / 2)
 print(relu_element)
 
-m_dropout = nn.Dropout(p=probability, inplace=False)
-p = a float probability of an element to be zeroed. default: 0.5
+#m_dropout = nn.Dropout(p=probability, inplace=False)
+#p = a float probability of an element to be zeroed. default: 0.5
 #inplace: a boolean, if set to True, will do this operation in-place. Default: false
 # %%
