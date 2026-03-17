@@ -523,3 +523,88 @@ class Transformer(nn.Module):
         #hyperparam b: # of heads
         #hyperparam dropout: 0.1
         #hyperparam hidden layer (a feed fwd): d_ff =
+
+    #Midterm Code ended at line 525 above.
+    #Finish the Model file with this block
+    def build_transformer(src_vocab_size: int, tgt_vocab_size: int, src_seq_len: int, tgt_seq_len: int, d_model: int = 512, N: int = 6, h: int = 8, dropout: float = 0.1, d_ff: int = 2048) -> Transformer:
+        # ->: py arrow symbol
+        #optional notation to indicate what data type a function should return, see above
+        
+        #create the embedding layers
+        src_embed = InputEmbeddings(d_model, src_vocab_size)
+        tgt_embed = InputEmbeddings(d_model, tgt_vocab_size)
+
+        #create the PE layers, we don't need to create 2 bc they do the same job, they also don't add params
+        #but bc they have the dropout and bc we want to make it verbal to understand each part w/o optimization
+        src_pos = PositionalEncoding(d_model, src_seq_len, dropout)
+        tgt_pos = PositionalEncoding(d_model, tgt_seq_len, dropout)
+
+        #create Encoder blocks, create empty array
+        encoder_blocks = []
+        #we have 'N: int = 6' Encoder blocks of them, so each encoder blocks has self attention
+        for _ in range(N):
+            encoder_self_attention_block = MultiHeadAttentionBlock(d_model, h, dropout)
+            feed_forward_block = FeedForwardBlock(d_model, d_ff, dropout)
+            encoder_block = EncoderBlock(encoder_self_attention_block, feed_forward_block, dropout)
+            #below the function "encoder_block's'.append(encoder_block)" is plural, bc the 's' is from the empty array made 4 lines above: 'encoder_blocks = []'
+            #below the 'encoder_block' argument is singular, bc the singular is from the assignment 2 lines above
+            encoder_blocks.append(encoder_block)
+
+        #create the Decoder blocks
+        decoder_blocks = []
+        for _ in range(N):
+            decoder_self_attention_block = MultiHeadAttentionBlock(d_model, h, dropout)
+            decoder_cross_attention_block = MultiHeadAttentionBlock(d_model, h, dropout)
+            feed_forward_block = FeedForwardBlock(d_model, d_ff, dropout)
+            decoder_block = DecoderBlock(decoder_self_attention_block, decoder_cross_attention_block, feed_forward_block, dropout)
+            #save it in its array
+            decoder_blocks.append(decoder_block)
+
+        #create the encoder and the decoder
+        encoder = Encoder(nn.ModuleList(encoder_blocks))
+        decoder = Decoder(nn.ModuleList(decoder_blocks))
+
+        #create the Projection Layer
+        #which converts d_model into the tgt vocabulary size, bc we want to take from source language to target language
+        #we want to project our output onto the tgt vocabulary
+        projection_layer = ProjectionLayer(d_model, tgt_vocab_size)
+
+        #create the Transformer: needs encoder, decoder, src_embed, tgt_embed, src_positionalencoding, tgt_positionalencoding, projection_layer
+        transformer = Transformer(encoder, decoder, src_embed, tgt_embed, src_pos, tgt_pos, projection_layer)
+
+        #initialize the params to make training faster so it doesn't start w/random values
+        #model.parameters() URL: https://docs.pytorch.org/docs/stable/generated/torch.nn.Module.html
+        #.parameters() is a method inside module: torch.nn.Module
+        #Return an iterator over module parameters; recurse=True
+
+        #for p, an abbreviation for 'p=parameters'
+        #there are many algos to initialize this, many use xavier uniform
+        #https://docs.pytorch.org/docs/stable/nn.init.html
+        for p in transformer.parameters():
+            if p.dim() > 1:
+                nn.init.xavier_uniform_(p)
+
+        return transformer
+        #https://towardsdatascience.com/how-to-estimate-the-number-of-parameters-in-transformer-models-ca0f57d8dff0/#:~:text=entangled%20by%20biases.-,The%20formula%20for%20calculating%20the%20number%20of%20parameters%20in%20the,omit%20it%20here%20for%20simplicity):
+
+    #Next we'll build the: dataset, training loop, inferencing part, TensorBoard code to visualize attention
+    #make file: train.py
+
+    #III. Code
+    #the following code is to start a new file: train_1.0.py file
+    #This will be File 02: train.py
+
+    #Review dataset: https://huggingface.co/datasets/opus_books/viewer/en-it/train?row=60
+    #this is only library we'll use besides pytorch and huggingface tokenizer library to transform this text into a vocabulary
+    #subset: en-it
+    #Dataset Anatomy
+    # each data item has id (string), translation (a pair of sentences in { "src": "source blah", "tgt": "tgt blah" }
+
+    #we'll train our transformer to translate from src language to tgt language
+    #we will make code to dl this dataset, create tokenizer
+    #tokenizer: comes before Input Embedding
+    #tokenizer goal: split the sentence into single words (many strategies: BPE tokenizer, word level tokenizer, sub-word level, word part)
+    #Byte Pair Encoding (BPE) is a subword tokenization algorithm used in LLMs (GPT, RoBERTa) to balance vocabulary size and efficiency by merging frequent character pairs. It mitigates the out-of-vocabulary (OOV) problem, compresses text, and preserves semantic meaning. 
+    #we'll use the simplest: word level tokenizer: splits sentences by whitespace as word boundaries
+    #then map each word to 1 number, to build a vocabulary
+    #in the process we will build special tokens which will be used for the Transformer: PAD: padding, SOS: start-of-sentence, EOS: end-of-sentence, UNK: unknown, MASK: mask; necessary for training the Transformer
